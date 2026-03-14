@@ -174,22 +174,55 @@ db = DatabaseManager()
 # AUTH
 # ══════════════════════════════════════════
 if "user" not in st.session_state or not st.session_state.user:
+
     st.markdown("""
-    <div class="auth-wrap">
-        <div class="auth-logo">📬</div>
-        <div class="auth-title">InternReach AI</div>
-        <div class="auth-sub">Personalized internship outreach — Groq Llama 70B</div>
-        <div class="auth-card">
+    <style>
+    .auth-bg {
+        min-height: 100vh;
+        background: #060912;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 2rem; position: relative; overflow: hidden;
+    }
+    .auth-blob1 { position:fixed; top:-100px; left:-100px; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, #6366f122 0%, transparent 70%); pointer-events:none; }
+    .auth-blob2 { position:fixed; bottom:-80px; right:-80px; width:350px; height:350px; border-radius:50%; background:radial-gradient(circle, #06b6d418 0%, transparent 70%); pointer-events:none; }
+    .auth-blob3 { position:fixed; top:45%; left:65%; width:250px; height:250px; border-radius:50%; background:radial-gradient(circle, #8b5cf615 0%, transparent 70%); pointer-events:none; }
+    .auth-grid { position:fixed; inset:0; background-image:linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px); background-size:44px 44px; pointer-events:none; }
+    .auth-logo-box { width:58px; height:58px; border-radius:16px; background:linear-gradient(135deg,#6366f1,#06b6d4); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; box-shadow:0 0 35px #6366f135; }
+    .auth-h1 { font-size:22px; font-weight:600; color:#f1f5f9; text-align:center; letter-spacing:-0.03em; margin-bottom:5px; }
+    .auth-p  { font-size:13px; color:#475569; text-align:center; margin-bottom:26px; }
+    .auth-box {
+        width:100%; max-width:420px; margin:0 auto;
+        background:rgba(10,15,30,0.85);
+        border:0.5px solid rgba(99,102,241,0.2);
+        border-radius:18px; padding:28px;
+        box-shadow:0 0 50px rgba(99,102,241,0.08), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .auth-punch { text-align:center; margin-top:20px; font-size:11.5px; color:#1e293b; letter-spacing:0.04em; line-height:1.8; }
+    .auth-punch b { color:#6366f1; }
+    .auth-tags { display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .auth-tag { font-size:11px; color:#334155; background:rgba(255,255,255,0.02); border:0.5px solid rgba(255,255,255,0.06); padding:3px 10px; border-radius:20px; }
+    </style>
+
+    <div class="auth-bg">
+      <div class="auth-grid"></div>
+      <div class="auth-blob1"></div>
+      <div class="auth-blob2"></div>
+      <div class="auth-blob3"></div>
+      <div class="auth-logo-box">📬</div>
+      <div class="auth-h1">InternReach AI</div>
+      <div class="auth-p">Your AI-powered internship outreach engine</div>
+      <div class="auth-box">
     """, unsafe_allow_html=True)
 
     auth_tab = st.tabs(["🔑  Login", "✨  Sign Up"])
 
     with auth_tab[0]:
         st.markdown("<br>", unsafe_allow_html=True)
-        l_email = st.text_input("Email", placeholder="you@gmail.com", key="l_email")
-        l_pass  = st.text_input("Password", type="password", key="l_pass")
+        l_email = st.text_input("Email Address", placeholder="you@gmail.com", key="l_email")
+        l_pass  = st.text_input("Password", type="password", placeholder="••••••••", key="l_pass")
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Login →", use_container_width=True, key="login_btn"):
+        if st.button("Sign In →", use_container_width=True, key="login_btn"):
             if l_email and l_pass:
                 with st.spinner(""):
                     result = login(l_email, l_pass)
@@ -206,7 +239,7 @@ if "user" not in st.session_state or not st.session_state.user:
         st.markdown("<br>", unsafe_allow_html=True)
         s_name  = st.text_input("Full Name", placeholder="Ashish Srivastava", key="s_name")
         s_email = st.text_input("Email", placeholder="you@gmail.com", key="s_email")
-        s_pass  = st.text_input("Password", type="password", key="s_pass")
+        s_pass  = st.text_input("Password", type="password", placeholder="••••••••", key="s_pass")
         c1, c2 = st.columns(2)
         with c1: s_year = st.selectbox("Year", ["1st Year","2nd Year","3rd Year","4th Year"], key="s_year")
         with c2: s_cgpa = st.text_input("CGPA", placeholder="8.5", key="s_cgpa")
@@ -225,7 +258,20 @@ if "user" not in st.session_state or not st.session_state.user:
             else:
                 st.error("Please fill all fields!")
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("""
+      </div>
+      <div class="auth-tags">
+        <span class="auth-tag">Groq Llama 70B</span>
+        <span class="auth-tag">RAG powered</span>
+        <span class="auth-tag">Free to use</span>
+        <span class="auth-tag">Auto outreach</span>
+      </div>
+      <div class="auth-punch">
+        Built with ❤️ by <b>Ashish Srivastava</b> &nbsp;·&nbsp; SRM Institute of Science & Technology<br>
+        <span style="color:#0f172a;font-size:10.5px;letter-spacing:0.08em;">FROM SRM, FOR SRM — LAND YOUR DREAM INTERNSHIP</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
 # ── User info ──

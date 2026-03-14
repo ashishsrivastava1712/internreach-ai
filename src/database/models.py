@@ -42,7 +42,8 @@ class FollowUp(Base):
     gmail_msg_id = Column(String(100))
     sent_at      = Column(DateTime, default=datetime.utcnow)
 
-DATABASE_URL = "sqlite:///src/database/outreach.db"
+import os
+DATABASE_URL = "sqlite:////tmp/outreach.db" if os.environ.get("STREAMLIT_CLOUD") else "sqlite:///src/database/outreach.db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 

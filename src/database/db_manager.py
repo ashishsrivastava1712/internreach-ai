@@ -28,20 +28,37 @@ class DBManager:
         self.session.commit()
         return contact
 
+    def get_all_hr_contacts(self) -> list:
+        """Get all HR contacts from DB as list of dicts."""
+        contacts = self.session.query(HRContact).all()
+        return [{
+            "hr_name":  c.hr_name,
+            "hr_email": c.hr_email,
+            "company":  c.company,
+            "domain":   c.domain,
+            "website":  c.website,
+        } for c in contacts]
+
+    def get_all_emails(self) -> list:
+        """Get all email campaigns for analytics."""
+        campaigns = self.session.query(EmailCampaign).all()
+        result = []
+        for c in campaigns:
+            hr = self.session.query(HRContact).filter_by(id=c.hr_id).first()
+            result.append({
+                "company":  hr.company  if hr else "",
+                "hr_name":  hr.hr_name  if hr else "",
+                "subject":  c.subject,
+                "status":   c.status,
+                "sent_at":  str(c.sent_at),
+            })
+        return result
+
     # ── Email Campaigns ───────────────────────────
 
     def log_sent_email(self, hr: dict, email_data: dict,
                        msg_id: str, thread_id: str = None,
                        score_data: dict = None) -> EmailCampaign:
-        """
-        Log a sent email to the database.
-        Args:
-            hr         : HR contact dict
-            email_data : {"subject", "body", "retrieved_context"(optional)}
-            msg_id     : Gmail message ID
-            thread_id  : Gmail thread ID (for reply tracking)
-            score_data : Quality scorer result dict (optional)
-        """
         contact = self.add_hr_contact(hr)
 
         campaign = EmailCampaign(
@@ -52,7 +69,7 @@ class DBManager:
             gmail_msg_id          = msg_id,
             thread_id             = thread_id or "",
             status                = "pending",
-            quality_score         = score_data["average_score"]        if score_data else 0.0,
+            quality_score         = score_data["average_score"]         if score_data else 0.0,
             personalization_score = score_data["personalization_score"] if score_data else 0,
             professionalism_score = score_data["professionalism_score"] if score_data else 0,
             relevance_score       = score_data["relevance_score"]       if score_data else 0,
@@ -64,7 +81,7 @@ class DBManager:
         return campaign
 
     def update_status(self, campaign_id: int, status: str):
-        """Update campaign status. Sets replied_at if status is 'replied'."""
+        """Update campaign status."""
         c = self.session.query(EmailCampaign).filter_by(id=campaign_id).first()
         if c:
             c.status = status
@@ -86,16 +103,16 @@ class DBManager:
             result.append({
                 "id":        c.id,
                 "thread_id": c.thread_id,
-                "hr_email":  hr.hr_email  if hr else "",
-                "hr_name":   hr.hr_name   if hr else "",
-                "company":   hr.company   if hr else "",
+                "hr_email":  hr.hr_email if hr else "",
+                "hr_name":   hr.hr_name  if hr else "",
+                "company":   hr.company  if hr else "",
                 "subject":   c.subject,
                 "sent_at":   c.sent_at,
             })
         return result
 
     def get_overdue_emails(self, days: int = 15) -> list:
-        """Return pending emails older than `days` days — need follow-up."""
+        """Return pending emails older than `days` days."""
         cutoff    = datetime.utcnow() - timedelta(days=days)
         campaigns = self.session.query(EmailCampaign).filter(
             EmailCampaign.status == "pending",
@@ -107,9 +124,9 @@ class DBManager:
             hr = self.session.query(HRContact).filter_by(id=c.hr_id).first()
             result.append({
                 "id":               c.id,
-                "hr_email":         hr.hr_email  if hr else "",
-                "hr_name":          hr.hr_name   if hr else "",
-                "company":          hr.company   if hr else "",
+                "hr_email":         hr.hr_email if hr else "",
+                "hr_name":          hr.hr_name  if hr else "",
+                "company":          hr.company  if hr else "",
                 "subject":          c.subject,
                 "sent_at":          str(c.sent_at),
                 "original_subject": c.subject,
@@ -119,7 +136,7 @@ class DBManager:
     # ── Follow-ups ────────────────────────────────
 
     def log_followup(self, record: dict, followup_data: dict, msg_id: str):
-        """Log a follow-up email and update campaign status."""
+        """Log a follow-up email."""
         fu = FollowUp(
             campaign_id  = record["id"],
             subject      = followup_data["subject"],

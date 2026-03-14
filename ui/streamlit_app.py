@@ -468,7 +468,15 @@ if page == "Upload Data":
                 time.sleep(0.3)
                 try:
                     hrs = load_hr_contacts(path)
-                    st.success(f"✅ {len(hrs)} contacts loaded")
+                    # Save to DB — persistent across restarts!
+                    saved = 0
+                    for hr in hrs:
+                        try:
+                            db.add_hr_contact(hr)
+                            saved += 1
+                        except:
+                            pass
+                    st.success(f"✅ {len(hrs)} contacts loaded & {saved} saved to DB")
                     st.dataframe(
                         [{"Company": h["company"], "HR": h["hr_name"], "Domain": h["domain"]} for h in hrs],
                         use_container_width=True, hide_index=True
@@ -516,7 +524,13 @@ elif page == "Run Campaign":
                 """, unsafe_allow_html=True)
                 time.sleep(0.8)
 
-            hrs = load_hr_contacts(hr_path)
+            # Try file first, fallback to DB
+            try:
+                hrs = load_hr_contacts(hr_path)
+            except:
+                hrs = db.get_all_hr_contacts() if hasattr(db, 'get_all_hr_contacts') else []
+                if hrs:
+                    st.info(f"📦 Loaded {len(hrs)} contacts from database")
 
             # Stats row
             st.markdown(f"""
